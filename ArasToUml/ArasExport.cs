@@ -7,8 +7,7 @@ namespace ArasToUml
     internal class ArasExport
     {
         internal static Innovator MyInnovator;
-        private readonly int _allItemCount;
-        private readonly string _prefix;
+        public readonly string Prefix;
 
         internal ArasExport(CommandLine cmd)
         {
@@ -21,30 +20,30 @@ namespace ArasToUml
             Console.WriteLine("Server connection established.");
 
             MyInnovator = login.Innovator;
-            _prefix = cmd.GetOptionValue("f");
+            Prefix = cmd.GetOptionValue("f");
 
-            Console.WriteLine($"Fetching all ItemTypes with prefix {_prefix}...");
+            Console.WriteLine($"Fetching all ItemTypes with prefix {Prefix}...");
             AllItemTypes = MyInnovator.newItem("ItemType", "get");
             AllItemTypes.setAttribute("serverEvents", "0");
-            AllItemTypes.setProperty("name", $"{_prefix}*");
+            AllItemTypes.setProperty("name", $"{Prefix}*");
             AllItemTypes.setPropertyCondition("name", "like");
             Item morphaeRel = MyInnovator.newItem("Morphae", "get");
             morphaeRel.setAttribute("select", "related_id(name)");
             AllItemTypes.addRelationship(morphaeRel);
             AllItemTypes = AllItemTypes.apply();
 
-            _allItemCount = AllItemTypes.getItemCount();
-            switch (_allItemCount)
+            int allItemCount = AllItemTypes.getItemCount();
+            switch (allItemCount)
             {
                 case -1:
                     throw new ItemApplyException(
                         $"Error when trying to find ItemTypes: {AllItemTypes.getErrorString()}");
                 case 0:
-                    Console.WriteLine($"No ItemTypes found with prefix {_prefix}. Please check prefix and run again.");
+                    Console.WriteLine($"No ItemTypes found with prefix {Prefix}. Please check prefix and run again.");
                     Environment.Exit(0);
                     break;
                 default:
-                    Console.WriteLine($"{_allItemCount} ItemTypes found.");
+                    Console.WriteLine($"{allItemCount} ItemTypes found.");
                     break;
             }
         }
