@@ -1,5 +1,4 @@
-﻿using System;
-using net.sf.dotnetcli;
+﻿using net.sf.dotnetcli;
 
 namespace ArasToUml
 {
@@ -18,6 +17,10 @@ namespace ArasToUml
         {
             Program program = new Program(args);
             ArasExport arasExport = program.PerformArasExport();
+            GraphCreator graphCreator = new GraphCreator(arasExport);
+            graphCreator.CreateGraph();
+            string filePath = program._cmd.HasOption("i") ? program._cmd.GetOptionValue("i") : @"C:\temp\temp.dot";
+            graphCreator.ExportGraph(filePath);
         }
 
         private ArasExport PerformArasExport()

@@ -28,6 +28,8 @@ namespace ArasToUml
             _options.AddOption("f", "prefix", true, "Prefix of ItemType names");
             _options.AddOption("r", "relitems", false,
                 "Determines whether ItemTypes with is_relationship equal to '1' shall be exported as classes as well");
+            _options.AddOption("i", "filepath", true,
+                @"File path to which the .dot file will be saved. Defaults to C:\temp\temp.dot");
 
             _options.AddOption("h", "help", false,
                 "If this option is found, the program will ignore all other options and print usage/help information.");

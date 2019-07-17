@@ -47,7 +47,15 @@
     <Compile Include="ArasExport.cs" />
     <Compile Include="ArasLogin.cs" />
     <Compile Include="ArgOptions.cs" />
+    <Compile Include="DotArrow.cs" />
+    <Compile Include="DotClass.cs" />
+    <Compile Include="DotEdge.cs" />
+    <Compile Include="DotElement.cs" />
+    <Compile Include="DotElementWithAttributes.cs" />
+    <Compile Include="DotGraph.cs" />
+    <Compile Include="DotNode.cs" />
     <Compile Include="GraphCreator.cs" />
+    <Compile Include="GraphExporter.cs" />
     <Compile Include="ItemApplyException.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
