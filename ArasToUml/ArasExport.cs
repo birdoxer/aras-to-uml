@@ -25,12 +25,18 @@ namespace ArasToUml
             Console.WriteLine($"Fetching all ItemTypes with prefix {Prefix}...");
             AllItemTypes = MyInnovator.newItem("ItemType", "get");
             AllItemTypes.setAttribute("serverEvents", "0");
+            AllItemTypes.setAttribute("select", "is_relationship, name");
             AllItemTypes.setProperty("name", $"{Prefix}*");
             AllItemTypes.setPropertyCondition("name", "like");
             Item morphaeRel = MyInnovator.newItem("Morphae", "get");
             morphaeRel.setAttribute("select", "related_id(name)");
             AllItemTypes.addRelationship(morphaeRel);
+            Item propertyRel = MyInnovator.newItem("Property", "get");
+            propertyRel.setAttribute("select", "name, data_type, data_source");
+            AllItemTypes.addRelationship(propertyRel);
             AllItemTypes = AllItemTypes.apply();
+            
+            login.LogOut();
 
             int allItemCount = AllItemTypes.getItemCount();
             switch (allItemCount)

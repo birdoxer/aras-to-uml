@@ -16,5 +16,10 @@ namespace ArasToUml
         internal Innovator Innovator { get; }
 
         private HttpServerConnection ServerConnection { get; }
+
+        internal void LogOut()
+        {
+            ServerConnection.Logout();
+        }
     }
 }

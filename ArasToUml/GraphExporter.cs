@@ -39,7 +39,7 @@ namespace ArasToUml
                         break;
                     case DotClass dotClass:
                         _fileContentBuilder.AppendLine($"{dotClass.Name} [");
-                        _fileContentBuilder.AppendLine($"label = \"{dotClass.Label}\"");
+                        _fileContentBuilder.AppendLine($"label = \"{{{dotClass.Label}}}\"");
                         AppendAttributes(dotClass);
                         _fileContentBuilder.AppendLine("]");
                         break;
