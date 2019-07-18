@@ -171,7 +171,6 @@ namespace ArasToUml
 
         private static string GenerateLabelFromProperties(Item itemType)
         {
-            //TODO: Filter out Aras default properties
             StringBuilder labelBuilder = new StringBuilder($"{itemType.getProperty("name", itemType.getID())}|");
 
             Item propRels = itemType.getRelationships("Property");
@@ -180,6 +179,7 @@ namespace ArasToUml
             {
                 Item currentProp = propRels.getItemByIndex(i);
                 string propName = currentProp.getProperty("name", currentProp.getID());
+                if (propName == "related_id" || propName == "source_id") continue;
                 string propDataSource = currentProp.getPropertyAttribute("data_source", "name");
                 string propDataType = string.IsNullOrEmpty(propDataSource)
                     ? currentProp.getProperty("data_type", "noDataTypeFound")
