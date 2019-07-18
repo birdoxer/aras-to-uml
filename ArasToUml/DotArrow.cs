@@ -20,6 +20,7 @@ namespace ArasToUml
 
         public DotClass Source { get; set; }
         public DotClass Target { get; set; }
+        public string CustomStyle { get; set; }
 
         public void SetSourceWithClassName(string sourceName, DotGraph dotGraph)
         {

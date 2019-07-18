@@ -14,11 +14,18 @@ namespace ArasToUml
         public string Name { get; set; }
         public List<DotElement> GraphElements { get; } = new List<DotElement>();
 
-        public DotClass GetDotClassByName(string className)
+        public DotClass GetDotClassByName(string className, bool createNewIfNotFound = true)
         {
             List<DotClass> classList = GraphElements.FindAll(el => el.GetType() == typeof(DotClass)).Cast<DotClass>()
                 .ToList();
-            return classList.Find(dotClass => dotClass.Name == className);
+            DotClass returnClass = classList.Find(dotClass => dotClass.Name == className);
+
+            if (returnClass != null || !createNewIfNotFound) return returnClass;
+
+            returnClass = new DotClass {Name = className, Label = $"{className}|"};
+            GraphElements.Add(returnClass);
+
+            return returnClass;
         }
     }
 }

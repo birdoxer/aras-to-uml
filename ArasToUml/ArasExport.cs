@@ -35,7 +35,7 @@ namespace ArasToUml
             propertyRel.setAttribute("select", "name, data_type, data_source");
             AllItemTypes.addRelationship(propertyRel);
             AllItemTypes = AllItemTypes.apply();
-            
+
             login.LogOut();
 
             int allItemCount = AllItemTypes.getItemCount();
