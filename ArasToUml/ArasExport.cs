@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Xml;
 using Aras.IOM;
 using net.sf.dotnetcli;
 
@@ -88,10 +87,7 @@ namespace ArasToUml
                 "state", "structure_view", "superseded_date", "team_id", "unlock_on_logout", "use_src_access"
             };
             StringBuilder clauseBuilder = new StringBuilder("");
-            foreach (string property in propsToExclude)
-            {
-                clauseBuilder.Append($",'{property}'");
-            }
+            foreach (string property in propsToExclude) clauseBuilder.Append($",'{property}'");
 
             return clauseBuilder.ToString().Substring(1);
         }

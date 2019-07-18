@@ -60,7 +60,7 @@ namespace ArasToUml
         {
             //TODO: Deal with properties referencing other ItemTypes; they have to be modelled as relations
             Console.WriteLine("Mapping ItemTypes to graph...");
-            
+
             int itemTypeCount = ArasExport.ItemTypes.getItemCount();
             for (int i = 0; i < itemTypeCount; i++)
             {
