@@ -36,6 +36,8 @@ namespace ArasToUml
                 {
                     case DotArrow dotArrow:
                         _fileContentBuilder.AppendLine($"{dotArrow.Source.Name} -> {dotArrow.Target.Name}");
+                        if (string.IsNullOrEmpty(dotArrow.CustomStyle)) break;
+                        _fileContentBuilder.AppendLine($"[{dotArrow.CustomStyle}]");
                         break;
                     case DotClass dotClass:
                         _fileContentBuilder.AppendLine($"{dotClass.Name} [");

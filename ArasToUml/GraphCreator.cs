@@ -14,13 +14,13 @@ namespace ArasToUml
         private ArasExport ArasExport { get; }
         private DotGraph Graph { get; set; }
 
-        public void CreateGraph()
+        public void CreateGraph(bool relsAsClasses)
         {
             Console.WriteLine("Creating graph...");
 
             InitialiseGraph();
             MapItemTypes();
-            MapRelationshipItemTypes();
+            MapRelationshipItemTypes(relsAsClasses);
             MapPolyItemTypes();
 
             Console.WriteLine("Graph successfully created!");
@@ -33,7 +33,7 @@ namespace ArasToUml
             GraphExporter graphExporter = new GraphExporter(Graph);
             graphExporter.Export(filePath);
 
-            Console.WriteLine($".dot file successfully saved!");
+            Console.WriteLine(".dot file successfully saved!");
         }
 
         private void InitialiseGraph()
@@ -52,20 +52,20 @@ namespace ArasToUml
             baseEdge.AddAttribute("shape", "record");
             baseEdge.AddAttribute("fontname", "Calibri");
             baseEdge.AddAttribute("fontsize", "10");
+            baseEdge.AddAttribute("arrowhead", "normal");
             Graph.GraphElements.Add(baseEdge);
         }
 
         private void MapItemTypes()
         {
-            //TODO: Filter out Aras default properties
             //TODO: Deal with properties referencing other ItemTypes; they have to be modelled as relations
-            Console.WriteLine("Adding ItemTypes to graph...");
+            Console.WriteLine("Mapping ItemTypes to graph...");
 
             int itemTypeCount = ArasExport.ItemTypes.getItemCount();
             for (int i = 0; i < itemTypeCount; i++)
             {
                 Item currentItemType = ArasExport.ItemTypes.getItemByIndex(i);
-                DotClass itemTypeClass = new DotClass()
+                DotClass itemTypeClass = new DotClass
                 {
                     Name = currentItemType.getProperty("name", $"\"{currentItemType.getID()}\""),
                     Label = GenerateLabelFromProperties(currentItemType)
@@ -73,19 +73,105 @@ namespace ArasToUml
                 Graph.GraphElements.Add(itemTypeClass);
             }
 
-            Console.WriteLine("ItemTypes successfully added!");
+            Console.WriteLine("ItemTypes successfully mapped!");
         }
 
-        private void MapRelationshipItemTypes()
+        private void MapRelationshipItemTypes(bool relsAsClasses)
         {
+            Console.WriteLine("Mapping Relationship ItemTypes to graph...");
+
+            int relTypeCount = ArasExport.RelationshipTypes.getItemCount();
+
+            if (relsAsClasses)
+            {
+                //TODO: deal with relationship ItemTypes as classes (cmd option 'r')
+            }
+            else
+            {
+                for (int i = 0; i < relTypeCount; i++)
+                {
+                    Item currentItemType = ArasExport.RelationshipTypes.getItemByIndex(i);
+                    Item propRels = currentItemType.getRelationships("Property");
+
+                    (string sourceClassName, string targetClassName) = DetermineSourceAndTargetName(propRels);
+                    if (sourceClassName == "" && targetClassName == "") continue;
+                    string customStyle = "";
+                    string currentTypeName = currentItemType.getProperty("name", "");
+                    if (targetClassName == "")
+                    {
+                        if (currentTypeName == "") continue;
+                        MapSpecialTypeAsClass(currentItemType);
+                        targetClassName = currentTypeName;
+                        customStyle = "dir = \"both\", arrowtail=\"odiamond\"";
+                    }
+                    else
+                    {
+                        customStyle = $"label = {currentTypeName}";
+                    }
+
+                    DotArrow relationshipArrow = new DotArrow(sourceClassName, targetClassName, Graph)
+                        {CustomStyle = customStyle};
+
+                    Graph.GraphElements.Add(relationshipArrow);
+                }
+            }
+
+            Console.WriteLine("Relationship ItemTypes successfully mapped!");
         }
 
         private void MapPolyItemTypes()
         {
+            Console.WriteLine("Mapping Poly-ItemTypes to graph...");
+
+            int polyTypeCount = ArasExport.PolyItemTypes.getItemCount();
+            for (int i = 0; i < polyTypeCount; i++)
+            {
+                Item currentPolyType = ArasExport.PolyItemTypes.getItemByIndex(i);
+                DotClass polyClass = MapSpecialTypeAsClass(currentPolyType);
+
+                Item morphaeRels = currentPolyType.getRelationships("Morphae");
+                int morphaeCount = morphaeRels.getItemCount();
+                for (int j = 0; j < morphaeCount; j++)
+                {
+                    Item currentMorphae = morphaeRels.getItemByIndex(j);
+                    Item subClassItem = currentMorphae.getPropertyItem("related_id");
+                    if (subClassItem == null) continue;
+                    DotClass subClass =
+                        Graph.GetDotClassByName(subClassItem.getProperty("name", "ClassHasNoName"), false);
+
+                    subClass = subClass ?? MapSpecialTypeAsClass(subClassItem);
+
+                    DotArrow relationshipArrow = new DotArrow(subClass, polyClass)
+                        {CustomStyle = "arrowhead = \"empty\""};
+
+                    Graph.GraphElements.Add(relationshipArrow);
+                }
+            }
+
+            Console.WriteLine("Poly-ItemTypes successfully mapped!");
+        }
+
+        private DotClass MapSpecialTypeAsClass(Item type)
+        {
+            string typeName = type.getProperty("name");
+
+            DotClass typeClass = Graph.GetDotClassByName(typeName);
+
+            int index = Graph.GraphElements.IndexOf(typeClass);
+
+            typeClass = new DotClass
+            {
+                Name = typeName,
+                Label = GenerateLabelFromProperties(type)
+            };
+
+            Graph.GraphElements[index] = typeClass;
+            return typeClass;
         }
 
         private static string GenerateLabelFromProperties(Item itemType)
         {
+            //TODO: Filter out Aras default properties
             StringBuilder labelBuilder = new StringBuilder($"{itemType.getProperty("name", itemType.getID())}|");
 
             Item propRels = itemType.getRelationships("Property");
@@ -102,6 +188,31 @@ namespace ArasToUml
             }
 
             return labelBuilder.ToString();
+        }
+
+        private static Tuple<string, string> DetermineSourceAndTargetName(Item propRels)
+        {
+            int propCount = propRels.getItemCount();
+            string sourceClassName = "";
+            string targetClassName = "";
+            for (int j = 0; j < propCount; j++)
+            {
+                Item currentProp = propRels.getItemByIndex(j);
+                string propName = currentProp.getProperty("name", "");
+                switch (propName)
+                {
+                    case "source_id":
+                        sourceClassName =
+                            currentProp.getPropertyAttribute("data_source", "name", "");
+                        break;
+                    case "related_id":
+                        targetClassName =
+                            currentProp.getPropertyAttribute("data_source", "name", "");
+                        break;
+                }
+            }
+
+            return new Tuple<string, string>(sourceClassName, targetClassName);
         }
     }
 }

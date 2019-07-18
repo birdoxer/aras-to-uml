@@ -18,7 +18,8 @@ namespace ArasToUml
             Program program = new Program(args);
             ArasExport arasExport = program.PerformArasExport();
             GraphCreator graphCreator = new GraphCreator(arasExport);
-            graphCreator.CreateGraph();
+            bool relsAsClasses = program._cmd.HasOption("r");
+            graphCreator.CreateGraph(relsAsClasses);
             string filePath = program._cmd.HasOption("i") ? program._cmd.GetOptionValue("i") : @"C:\temp\temp.dot";
             graphCreator.ExportGraph(filePath);
         }
