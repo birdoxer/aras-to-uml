@@ -58,7 +58,6 @@ namespace ArasToUml
 
         private void MapItemTypes()
         {
-            //TODO: Deal with properties referencing other ItemTypes; they have to be modelled as relations
             Console.WriteLine("Mapping ItemTypes to graph...");
 
             int itemTypeCount = ArasExport.ItemTypes.getItemCount();
@@ -71,6 +70,7 @@ namespace ArasToUml
                     Label = GenerateLabelFromProperties(currentItemType)
                 };
                 Graph.GraphElements.Add(itemTypeClass);
+                MapPropertyRelations(currentItemType);
             }
 
             Console.WriteLine("ItemTypes successfully mapped!");
@@ -169,6 +169,22 @@ namespace ArasToUml
             return typeClass;
         }
 
+        private void MapPropertyRelations(Item itemType)
+        {
+            Item itemProps = itemType.getItemsByXPath(".//Item[@type = 'Property' and data_type = 'item']");
+            int itemPropCount = itemProps.getItemCount();
+            for (int i = 0; i < itemPropCount; i++)
+            {
+                Item currentProp = itemProps.getItemByIndex(i);
+                string dataSource = currentProp.getPropertyAttribute("data_source", "name", "");
+                if (dataSource == "") continue;
+                DotArrow relationshipArrow =
+                    new DotArrow(itemType.getProperty("name", "UnknownItemType"), dataSource, Graph)
+                        {CustomStyle = $"label = \"{currentProp.getProperty("name", "")}\""};
+                Graph.GraphElements.Add(relationshipArrow);
+            }
+        }
+
         private static string GenerateLabelFromProperties(Item itemType)
         {
             StringBuilder labelBuilder = new StringBuilder($"{itemType.getProperty("name", itemType.getID())}|");
@@ -181,9 +197,9 @@ namespace ArasToUml
                 string propName = currentProp.getProperty("name", currentProp.getID());
                 if (propName == "related_id" || propName == "source_id") continue;
                 string propDataSource = currentProp.getPropertyAttribute("data_source", "name");
-                string propDataType = string.IsNullOrEmpty(propDataSource)
-                    ? currentProp.getProperty("data_type", "noDataTypeFound")
-                    : propDataSource;
+                string propDataType = currentProp.getProperty("data_type", "noDataTypeFound");
+                if (propDataType == "item" && !string.IsNullOrEmpty(propDataSource)) continue;
+
                 labelBuilder.Append($"{propName} : {propDataType}\\l");
             }
 
