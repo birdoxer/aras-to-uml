@@ -36,4 +36,4 @@ Original code written by birdoxer.
 
 ## License
 
-This project is published to Github under the MIT license. See the [LICENSE file](./LICENSE.md) for license rights and limitations.
+This project is published to Github under the MIT license. See the [LICENSE file](./LICENSE) for license rights and limitations.
