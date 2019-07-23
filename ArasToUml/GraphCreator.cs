@@ -82,39 +82,39 @@ namespace ArasToUml
 
             int relTypeCount = ArasExport.RelationshipTypes.getItemCount();
 
-            if (relsAsClasses)
+
+            for (int i = 0; i < relTypeCount; i++)
             {
-                //TODO: deal with relationship ItemTypes as classes (cmd option 'r')
-            }
-            else
-            {
-                for (int i = 0; i < relTypeCount; i++)
+                Item currentItemType = ArasExport.RelationshipTypes.getItemByIndex(i);
+                Item propRels = currentItemType.getRelationships("Property");
+
+                (string sourceClassName, string targetClassName) = DetermineSourceAndTargetName(propRels);
+                if (sourceClassName == "" && targetClassName == "") continue;
+                string customStyle = "";
+                string currentTypeName = currentItemType.getProperty("name", "");
+                if (targetClassName == "")
                 {
-                    Item currentItemType = ArasExport.RelationshipTypes.getItemByIndex(i);
-                    Item propRels = currentItemType.getRelationships("Property");
-
-                    (string sourceClassName, string targetClassName) = DetermineSourceAndTargetName(propRels);
-                    if (sourceClassName == "" && targetClassName == "") continue;
-                    string customStyle = "";
-                    string currentTypeName = currentItemType.getProperty("name", "");
-                    if (targetClassName == "")
-                    {
-                        if (currentTypeName == "") continue;
-                        MapSpecialTypeAsClass(currentItemType);
-                        targetClassName = currentTypeName;
-                        customStyle = "dir = \"both\", arrowtail=\"odiamond\"";
-                    }
-                    else
-                    {
-                        customStyle = $"label = {currentTypeName}";
-                    }
-
-                    DotArrow relationshipArrow = new DotArrow(sourceClassName, targetClassName, Graph)
-                        {CustomStyle = customStyle};
-
-                    Graph.GraphElements.Add(relationshipArrow);
+                    if (currentTypeName == "") continue;
+                    MapSpecialTypeAsClass(currentItemType);
+                    targetClassName = currentTypeName;
+                    customStyle = "dir = \"both\", arrowtail=\"odiamond\"";
                 }
+                else if (relsAsClasses)
+                {
+                    MapRelsAsClasses(currentItemType, sourceClassName, targetClassName);
+                    continue;
+                }
+                else
+                {
+                    customStyle = $"label = {currentTypeName}";
+                }
+
+                DotArrow relationshipArrow = new DotArrow(sourceClassName, targetClassName, Graph)
+                    {CustomStyle = customStyle};
+
+                Graph.GraphElements.Add(relationshipArrow);
             }
+
 
             Console.WriteLine("Relationship ItemTypes successfully mapped!");
         }
@@ -185,9 +185,21 @@ namespace ArasToUml
             }
         }
 
+        private void MapRelsAsClasses(Item itemType, string sourceClassName, string targetClassName)
+        {
+            DotClass relClass = MapSpecialTypeAsClass(itemType);
+            DotArrow sourceArrow = new DotArrow(relClass.Name, sourceClassName, Graph)
+                {CustomStyle = "label = source_id"};
+            Graph.GraphElements.Add(sourceArrow);
+            DotArrow targetArrow = new DotArrow(relClass.Name, targetClassName, Graph)
+                {CustomStyle = "label = related_id"};
+            Graph.GraphElements.Add(targetArrow);
+        }
+
         private static string GenerateLabelFromProperties(Item itemType)
         {
-            StringBuilder labelBuilder = new StringBuilder($"{itemType.getProperty("name", itemType.getID())}|");
+            StringBuilder labelBuilder =
+                new StringBuilder($"{itemType.getProperty("name", $"\"{itemType.getID()}\"")}|");
 
             Item propRels = itemType.getRelationships("Property");
             int propRelCount = propRels.getItemCount();
@@ -211,9 +223,9 @@ namespace ArasToUml
             int propCount = propRels.getItemCount();
             string sourceClassName = "";
             string targetClassName = "";
-            for (int j = 0; j < propCount; j++)
+            for (int i = 0; i < propCount; i++)
             {
-                Item currentProp = propRels.getItemByIndex(j);
+                Item currentProp = propRels.getItemByIndex(i);
                 string propName = currentProp.getProperty("name", "");
                 switch (propName)
                 {
