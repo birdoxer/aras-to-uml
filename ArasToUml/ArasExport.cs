@@ -8,24 +8,24 @@ namespace ArasToUml
 {
     internal class ArasExport
     {
-        internal static Innovator MyInnovator;
-        public readonly string Prefix;
+        private static Innovator _myInnovator;
+        private readonly string _prefix;
 
         internal ArasExport(CommandLine cmd)
         {
             Console.WriteLine("Establishing server connection...");
-            ArasLogin login = new ArasLogin(
+            var login = new ArasLogin(
                 cmd.GetOptionValue("u"),
                 cmd.GetOptionValue("d"),
                 cmd.GetOptionValue("l"),
                 cmd.GetOptionValue("p"));
             Console.WriteLine("Server connection established.");
 
-            MyInnovator = login.Innovator;
-            Prefix = cmd.GetOptionValue("f");
+            _myInnovator = login.Innovator;
+            _prefix = cmd.GetOptionValue("f");
             bool excludeDefProps = cmd.HasOption("e");
 
-            Console.WriteLine($"Fetching all ItemTypes with prefix {Prefix}...");
+            Console.WriteLine($"Fetching all ItemTypes with prefix {_prefix}...");
             AllItemTypes = FetchAllItemTypes(excludeDefProps);
 
             login.LogOut();
@@ -37,7 +37,7 @@ namespace ArasToUml
                     throw new ItemApplyException(
                         $"Error when trying to find ItemTypes: {AllItemTypes.getErrorString()}");
                 case 0:
-                    Console.WriteLine($"No ItemTypes found with prefix {Prefix}. Please check prefix and run again.");
+                    Console.WriteLine($"No ItemTypes found with prefix {_prefix}. Please check prefix and run again.");
                     Environment.Exit(0);
                     break;
                 default:
@@ -47,21 +47,21 @@ namespace ArasToUml
         }
 
         private Item AllItemTypes { get; }
-        internal Item ItemTypes { get; set; }
-        internal Item RelationshipTypes { get; set; }
-        internal Item PolyItemTypes { get; set; }
+        internal Item ItemTypes { get; private set; }
+        internal Item RelationshipTypes { get; private set; }
+        internal Item PolyItemTypes { get; private set; }
 
         private Item FetchAllItemTypes(bool excludeDefProps)
         {
-            Item allItemTypes = MyInnovator.newItem("ItemType", "get");
+            var allItemTypes = _myInnovator.newItem("ItemType", "get");
             allItemTypes.setAttribute("serverEvents", "0");
             allItemTypes.setAttribute("select", "is_relationship, name");
-            allItemTypes.setProperty("name", $"{Prefix}*");
+            allItemTypes.setProperty("name", $"{_prefix}*");
             allItemTypes.setPropertyCondition("name", "like");
-            Item morphaeRel = MyInnovator.newItem("Morphae", "get");
+            var morphaeRel = _myInnovator.newItem("Morphae", "get");
             morphaeRel.setAttribute("select", "related_id(name)");
             allItemTypes.addRelationship(morphaeRel);
-            Item propertyRel = MyInnovator.newItem("Property", "get");
+            var propertyRel = _myInnovator.newItem("Property", "get");
             propertyRel.setAttribute("select", "name, data_type, data_source");
             if (excludeDefProps)
             {
@@ -75,7 +75,7 @@ namespace ArasToUml
 
         private static string CreateDefPropsExclusionClause()
         {
-            List<string> propsToExclude = new List<string>
+            var propsToExclude = new List<string>
             {
                 "allow_private_permission", "auto_search", "behavior", "classification", "close_icon", "config_id",
                 "core", "created_by_id", "created_on", "css", "current_state", "default_page_size", "effective_date",
@@ -86,7 +86,7 @@ namespace ArasToUml
                 "owned_by_id ", "permission_id", "release_date", "revisions", "show_parameters_tab", "sort_order",
                 "state", "structure_view", "superseded_date", "team_id", "unlock_on_logout", "use_src_access"
             };
-            StringBuilder clauseBuilder = new StringBuilder("");
+            var clauseBuilder = new StringBuilder("");
             foreach (string property in propsToExclude) clauseBuilder.Append($",'{property}'");
 
             return clauseBuilder.ToString().Substring(1);

@@ -36,7 +36,7 @@ namespace ArasToUml
                 "If this option is found, the program will ignore all other options and print usage/help information.");
 
             ICommandLineParser parser = new BasicParser();
-            CommandLine cmd = parser.Parse(_options, args);
+            var cmd = parser.Parse(_options, args);
             _cmd = cmd;
         }
 
@@ -50,34 +50,13 @@ namespace ArasToUml
         }
 
         /// <summary>
-        ///     Determines if the application was called with or without the command line arguments for the server connection.
-        /// </summary>
-        /// <remarks>
-        ///     Used to determine if default connection parameters should be used or not. If one of the
-        ///     Aras-instance-specific arguments were given, all of the other ones have to be given, too.
-        /// </remarks>
-        /// <returns>true if all Aras-instance-specific arguments were provided, false if none of them were provided.</returns>
-        /// <exception cref="ArgumentException">
-        ///     Throws an <see cref="ArgumentException" /> if at least one but not all
-        ///     Aras-instance-specific arguments were given.
-        /// </exception>
-        public bool HasLoginOptions()
-        {
-            if (!(_cmd.HasOption("u") || _cmd.HasOption("d") || _cmd.HasOption("l") || _cmd.HasOption("p")))
-                return false;
-            if (!(_cmd.HasOption("u") && _cmd.HasOption("d") && _cmd.HasOption("l") && _cmd.HasOption("p")))
-                throw new ArgumentException("Please provide all login details.");
-            return true;
-        }
-
-        /// <summary>
         ///     Method that prints out help/usage information and exits the program if the corresponding command line
         ///     argument was given.
         /// </summary>
         public void DealWithHelpOption()
         {
             if (!_cmd.HasOption("h")) return;
-            HelpFormatter formatter = new HelpFormatter();
+            var formatter = new HelpFormatter();
             formatter.PrintHelp("cmd", _options);
             Environment.Exit(0);
         }

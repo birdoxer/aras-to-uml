@@ -8,7 +8,7 @@ namespace ArasToUml
         internal ArasLogin(string url, string db, string user, string passWord)
         {
             ServerConnection = IomFactory.CreateHttpServerConnection(url, db, user, passWord);
-            Item loginResult = ServerConnection.Login();
+            var loginResult = ServerConnection.Login();
             if (loginResult.isError()) throw new Exception(loginResult.ToString());
             Innovator = IomFactory.CreateInnovator(ServerConnection);
         }
