@@ -11,14 +11,14 @@ namespace ArasToUml
         }
 
         public bool IsDiGraph { get; set; } = true;
-        public string Name { get; set; }
+        public string Name { get; }
         public List<DotElement> GraphElements { get; } = new List<DotElement>();
 
         public DotClass GetDotClassByName(string className, bool createNewIfNotFound = true)
         {
-            List<DotClass> classList = GraphElements.FindAll(el => el.GetType() == typeof(DotClass)).Cast<DotClass>()
+            var classList = GraphElements.FindAll(el => el.GetType() == typeof(DotClass)).Cast<DotClass>()
                 .ToList();
-            DotClass returnClass = classList.Find(dotClass => dotClass.Name == className);
+            var returnClass = classList.Find(dotClass => dotClass.Name == className);
 
             if (returnClass != null || !createNewIfNotFound) return returnClass;
 

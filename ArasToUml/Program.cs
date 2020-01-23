@@ -8,16 +8,16 @@ namespace ArasToUml
 
         private Program(string[] args)
         {
-            ArgOptions argOptions = new ArgOptions(args);
+            var argOptions = new ArgOptions(args);
             argOptions.DealWithHelpOption();
             _cmd = argOptions.GetCmd();
         }
 
         public static void Main(string[] args)
         {
-            Program program = new Program(args);
-            ArasExport arasExport = program.PerformArasExport();
-            GraphCreator graphCreator = new GraphCreator(arasExport);
+            var program = new Program(args);
+            var arasExport = program.PerformArasExport();
+            var graphCreator = new GraphCreator(arasExport);
             bool relsAsClasses = program._cmd.HasOption("r");
             graphCreator.CreateGraph(relsAsClasses);
             string filePath = program._cmd.HasOption("i") ? program._cmd.GetOptionValue("i") : @"C:\temp\temp.dot";
@@ -26,7 +26,7 @@ namespace ArasToUml
 
         private ArasExport PerformArasExport()
         {
-            ArasExport arasExport = new ArasExport(_cmd);
+            var arasExport = new ArasExport(_cmd);
             arasExport.SplitAllItemTypes();
             return arasExport;
         }

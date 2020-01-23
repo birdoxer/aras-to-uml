@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+// ReSharper disable UnusedMember.Global
 
 namespace ArasToUml
 {
@@ -11,7 +12,7 @@ namespace ArasToUml
             _attributes.Add(attributeName, attributeValue);
         }
 
-        public void RemoveAttribute(string attributeName)
+        private void RemoveAttribute(string attributeName)
         {
             _attributes.Remove(attributeName);
         }

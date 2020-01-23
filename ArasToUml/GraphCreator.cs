@@ -30,7 +30,7 @@ namespace ArasToUml
         {
             Console.WriteLine($"Saving .dot file to {filePath}...");
 
-            GraphExporter graphExporter = new GraphExporter(Graph);
+            var graphExporter = new GraphExporter(Graph);
             graphExporter.Export(filePath);
 
             Console.WriteLine(".dot file successfully saved!");
@@ -42,13 +42,13 @@ namespace ArasToUml
             Graph.AddAttribute("fontname", "Calibri");
             Graph.AddAttribute("fontsize", "10");
 
-            DotNode baseNode = new DotNode();
+            var baseNode = new DotNode();
             baseNode.AddAttribute("shape", "record");
             baseNode.AddAttribute("fontname", "Calibri");
             baseNode.AddAttribute("fontsize", "10");
             Graph.GraphElements.Add(baseNode);
 
-            DotEdge baseEdge = new DotEdge();
+            var baseEdge = new DotEdge();
             baseEdge.AddAttribute("shape", "record");
             baseEdge.AddAttribute("fontname", "Calibri");
             baseEdge.AddAttribute("fontsize", "10");
@@ -63,8 +63,8 @@ namespace ArasToUml
             int itemTypeCount = ArasExport.ItemTypes.getItemCount();
             for (int i = 0; i < itemTypeCount; i++)
             {
-                Item currentItemType = ArasExport.ItemTypes.getItemByIndex(i);
-                DotClass itemTypeClass = new DotClass
+                var currentItemType = ArasExport.ItemTypes.getItemByIndex(i);
+                var itemTypeClass = new DotClass
                 {
                     Name = currentItemType.getProperty("name", $"\"{currentItemType.getID()}\""),
                     Label = GenerateLabelFromProperties(currentItemType)
@@ -85,12 +85,12 @@ namespace ArasToUml
 
             for (int i = 0; i < relTypeCount; i++)
             {
-                Item currentItemType = ArasExport.RelationshipTypes.getItemByIndex(i);
-                Item propRels = currentItemType.getRelationships("Property");
+                var currentItemType = ArasExport.RelationshipTypes.getItemByIndex(i);
+                var propRels = currentItemType.getRelationships("Property");
 
                 (string sourceClassName, string targetClassName) = DetermineSourceAndTargetName(propRels);
                 if (sourceClassName == "" && targetClassName == "") continue;
-                string customStyle = "";
+                string customStyle;
                 string currentTypeName = currentItemType.getProperty("name", "");
                 if (targetClassName == "")
                 {
@@ -106,10 +106,10 @@ namespace ArasToUml
                 }
                 else
                 {
-                    customStyle = $"label = {currentTypeName}";
+                    customStyle = $"label = \"{currentTypeName}\"";
                 }
 
-                DotArrow relationshipArrow = new DotArrow(sourceClassName, targetClassName, Graph)
+                var relationshipArrow = new DotArrow(sourceClassName, targetClassName, Graph)
                     {CustomStyle = customStyle};
 
                 Graph.GraphElements.Add(relationshipArrow);
@@ -126,22 +126,22 @@ namespace ArasToUml
             int polyTypeCount = ArasExport.PolyItemTypes.getItemCount();
             for (int i = 0; i < polyTypeCount; i++)
             {
-                Item currentPolyType = ArasExport.PolyItemTypes.getItemByIndex(i);
-                DotClass polyClass = MapSpecialTypeAsClass(currentPolyType);
+                var currentPolyType = ArasExport.PolyItemTypes.getItemByIndex(i);
+                var polyClass = MapSpecialTypeAsClass(currentPolyType);
 
-                Item morphaeRels = currentPolyType.getRelationships("Morphae");
+                var morphaeRels = currentPolyType.getRelationships("Morphae");
                 int morphaeCount = morphaeRels.getItemCount();
                 for (int j = 0; j < morphaeCount; j++)
                 {
-                    Item currentMorphae = morphaeRels.getItemByIndex(j);
-                    Item subClassItem = currentMorphae.getPropertyItem("related_id");
+                    var currentMorphae = morphaeRels.getItemByIndex(j);
+                    var subClassItem = currentMorphae.getPropertyItem("related_id");
                     if (subClassItem == null) continue;
-                    DotClass subClass =
+                    var subClass =
                         Graph.GetDotClassByName(subClassItem.getProperty("name", "ClassHasNoName"), false);
 
                     subClass = subClass ?? MapSpecialTypeAsClass(subClassItem);
 
-                    DotArrow relationshipArrow = new DotArrow(subClass, polyClass)
+                    var relationshipArrow = new DotArrow(subClass, polyClass)
                         {CustomStyle = "arrowhead = \"empty\""};
 
                     Graph.GraphElements.Add(relationshipArrow);
@@ -155,7 +155,7 @@ namespace ArasToUml
         {
             string typeName = type.getProperty("name");
 
-            DotClass typeClass = Graph.GetDotClassByName(typeName);
+            var typeClass = Graph.GetDotClassByName(typeName);
 
             int index = Graph.GraphElements.IndexOf(typeClass);
 
@@ -171,14 +171,14 @@ namespace ArasToUml
 
         private void MapPropertyRelations(Item itemType)
         {
-            Item itemProps = itemType.getItemsByXPath(".//Item[@type = 'Property' and data_type = 'item']");
+            var itemProps = itemType.getItemsByXPath(".//Item[@type = 'Property' and data_type = 'item']");
             int itemPropCount = itemProps.getItemCount();
             for (int i = 0; i < itemPropCount; i++)
             {
-                Item currentProp = itemProps.getItemByIndex(i);
+                var currentProp = itemProps.getItemByIndex(i);
                 string dataSource = currentProp.getPropertyAttribute("data_source", "name", "");
                 if (dataSource == "") continue;
-                DotArrow relationshipArrow =
+                var relationshipArrow =
                     new DotArrow(itemType.getProperty("name", "UnknownItemType"), dataSource, Graph)
                         {CustomStyle = $"label = \"{currentProp.getProperty("name", "")}\""};
                 Graph.GraphElements.Add(relationshipArrow);
@@ -187,25 +187,25 @@ namespace ArasToUml
 
         private void MapRelsAsClasses(Item itemType, string sourceClassName, string targetClassName)
         {
-            DotClass relClass = MapSpecialTypeAsClass(itemType);
-            DotArrow sourceArrow = new DotArrow(relClass.Name, sourceClassName, Graph)
+            var relClass = MapSpecialTypeAsClass(itemType);
+            var sourceArrow = new DotArrow(relClass.Name, sourceClassName, Graph)
                 {CustomStyle = "label = source_id"};
             Graph.GraphElements.Add(sourceArrow);
-            DotArrow targetArrow = new DotArrow(relClass.Name, targetClassName, Graph)
+            var targetArrow = new DotArrow(relClass.Name, targetClassName, Graph)
                 {CustomStyle = "label = related_id"};
             Graph.GraphElements.Add(targetArrow);
         }
 
         private static string GenerateLabelFromProperties(Item itemType)
         {
-            StringBuilder labelBuilder =
+            var labelBuilder =
                 new StringBuilder($"{itemType.getProperty("name", $"\"{itemType.getID()}\"")}|");
 
-            Item propRels = itemType.getRelationships("Property");
+            var propRels = itemType.getRelationships("Property");
             int propRelCount = propRels.getItemCount();
             for (int i = 0; i < propRelCount; i++)
             {
-                Item currentProp = propRels.getItemByIndex(i);
+                var currentProp = propRels.getItemByIndex(i);
                 string propName = currentProp.getProperty("name", currentProp.getID());
                 if (propName == "related_id" || propName == "source_id") continue;
                 string propDataSource = currentProp.getPropertyAttribute("data_source", "name");
@@ -225,7 +225,7 @@ namespace ArasToUml
             string targetClassName = "";
             for (int i = 0; i < propCount; i++)
             {
-                Item currentProp = propRels.getItemByIndex(i);
+                var currentProp = propRels.getItemByIndex(i);
                 string propName = currentProp.getProperty("name", "");
                 switch (propName)
                 {

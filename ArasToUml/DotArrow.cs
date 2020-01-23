@@ -2,10 +2,6 @@ namespace ArasToUml
 {
     public class DotArrow : DotElement
     {
-        public DotArrow()
-        {
-        }
-
         public DotArrow(DotClass source, DotClass target)
         {
             Source = source;
@@ -18,16 +14,16 @@ namespace ArasToUml
             SetTargetWithClassName(target, dotGraph);
         }
 
-        public DotClass Source { get; set; }
-        public DotClass Target { get; set; }
+        public DotClass Source { get; private set; }
+        public DotClass Target { get; private set; }
         public string CustomStyle { get; set; }
 
-        public void SetSourceWithClassName(string sourceName, DotGraph dotGraph)
+        private void SetSourceWithClassName(string sourceName, DotGraph dotGraph)
         {
             Source = dotGraph.GetDotClassByName(sourceName);
         }
 
-        public void SetTargetWithClassName(string targetName, DotGraph dotGraph)
+        private void SetTargetWithClassName(string targetName, DotGraph dotGraph)
         {
             Target = dotGraph.GetDotClassByName(targetName);
         }

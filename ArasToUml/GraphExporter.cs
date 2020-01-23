@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -31,7 +30,7 @@ namespace ArasToUml
 
         private void AppendDotElements()
         {
-            foreach (DotElement graphElement in _dotGraph.GraphElements)
+            foreach (var graphElement in _dotGraph.GraphElements)
                 switch (graphElement)
                 {
                     case DotArrow dotArrow:
@@ -60,7 +59,7 @@ namespace ArasToUml
 
         private void AppendAttributes(DotElementWithAttributes dotElement)
         {
-            foreach (KeyValuePair<string, string> kvp in dotElement.GetAttributes())
+            foreach (var kvp in dotElement.GetAttributes())
                 _fileContentBuilder.AppendLine($"{kvp.Key} = \"{kvp.Value}\"");
         }
     }
