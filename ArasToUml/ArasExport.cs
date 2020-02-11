@@ -9,7 +9,9 @@ namespace ArasToUml
     internal class ArasExport
     {
         private static Innovator _myInnovator;
+        private readonly string _packageName;
         private readonly string _prefix;
+        private readonly bool _doConsiderPackage;
 
         internal ArasExport(CommandLine cmd)
         {
@@ -23,9 +25,14 @@ namespace ArasToUml
 
             _myInnovator = login.Innovator;
             _prefix = cmd.GetOptionValue("f");
+            _packageName = cmd.GetOptionValue("g");
+            _doConsiderPackage = !string.IsNullOrWhiteSpace(_packageName);
             bool excludeDefProps = cmd.HasOption("e");
 
-            Console.WriteLine($"Fetching all ItemTypes with prefix {_prefix}...");
+            Console.Write($"Fetching all ItemTypes with prefix {_prefix}");
+            if (_doConsiderPackage)
+                Console.Write($" and inside PackageDefinition {_packageName}");
+            Console.WriteLine("...");
             AllItemTypes = FetchAllItemTypes(excludeDefProps);
 
             login.LogOut();
@@ -58,6 +65,13 @@ namespace ArasToUml
             allItemTypes.setAttribute("select", "is_relationship, name");
             allItemTypes.setProperty("name", $"{_prefix}*");
             allItemTypes.setPropertyCondition("name", "like");
+            if (_doConsiderPackage)
+            {
+                var andItem = allItemTypes.newAND();
+                andItem.setProperty("name", CreatePackageItemTypeCollection());
+                andItem.setPropertyCondition("name", "in");
+            }
+
             var morphaeRel = _myInnovator.newItem("Morphae", "get");
             morphaeRel.setAttribute("select", "related_id(name)");
             allItemTypes.addRelationship(morphaeRel);
@@ -71,6 +85,52 @@ namespace ArasToUml
 
             allItemTypes.addRelationship(propertyRel);
             return allItemTypes.apply();
+        }
+
+        private string CreatePackageItemTypeCollection()
+        {
+            var nameSet = new HashSet<string>();
+            var packageDefinition = _myInnovator.newItem("PackageDefinition", "get");
+            packageDefinition.setAttribute("select", "id");
+            packageDefinition.setProperty("name", _packageName);
+            var packageGroup = _myInnovator.newItem("PackageGroup", "get");
+            packageGroup.setAttribute("select", "id");
+            packageGroup.setProperty("name", "'ItemType','RelationshipType'");
+            packageGroup.setPropertyCondition("name", "in");
+            packageDefinition.addRelationship(packageGroup);
+            packageDefinition = packageDefinition.apply();
+            if (packageDefinition.getItemCount() != 1)
+                throw new ArgumentException($"No PackageDefinition found with name {_packageName}");
+
+            packageGroup = packageDefinition.getRelationships("PackageGroup");
+            int groupCount = packageGroup.getItemCount();
+            if (groupCount < 1) 
+                throw new ArgumentException($"No ItemTypes found in PackageDefinition with name {_packageName}");
+
+            var idSet = new HashSet<string>();
+            for (int i = 0; i < groupCount; i++)
+            {
+                idSet.Add(packageGroup.getItemByIndex(i).getID());
+            }
+            
+            var packageElements = _myInnovator.newItem("PackageElement", "get");
+            packageElements.setAttribute("select", "name");
+            packageElements.setProperty("source_id", $"'{string.Join("','", idSet)}'");
+            packageElements.setPropertyCondition("source_id", "in");
+            packageElements = packageElements.apply();
+            int elementCount = packageElements.getItemCount();
+            if (elementCount < 1)
+                throw new ArgumentException(
+                    $"No ItemTypes found in 'ItemTypes' PackageGroup of PackageDefinition with name {_packageName}");
+
+            for (int i = 0; i < elementCount; i++)
+            {
+                string currentName = packageElements.getItemByIndex(i).getProperty("name", "");
+                if (currentName == "") continue;
+                nameSet.Add(currentName);
+            }
+
+            return $"'{string.Join("','", nameSet)}'";
         }
 
         private static string CreateDefPropsExclusionClause()

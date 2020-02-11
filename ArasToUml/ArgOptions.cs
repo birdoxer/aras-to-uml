@@ -26,6 +26,7 @@ namespace ArasToUml
             _options.AddOption("l", "login", true, "Login username");
             _options.AddOption("p", "pw", true, "Login password");
             _options.AddOption("f", "prefix", true, "Prefix of ItemType names");
+            _options.AddOption("g", "package", true, "PackageDefinition ItemTypes are grouped in");
             _options.AddOption("r", "relitems", false,
                 "Determines whether ItemTypes with is_relationship equal to '1' shall be exported as classes as well");
             _options.AddOption("i", "filepath", true,
