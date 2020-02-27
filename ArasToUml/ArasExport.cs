@@ -31,7 +31,7 @@ namespace ArasToUml
 
             Console.Write($"Fetching all ItemTypes with prefix {_prefix}");
             if (_doConsiderPackage)
-                Console.Write($" and inside PackageDefinition {_packageName}");
+                Console.Write($" inside PackageDefinition {_packageName}");
             Console.WriteLine("...");
             AllItemTypes = FetchAllItemTypes(excludeDefProps);
 
@@ -44,7 +44,7 @@ namespace ArasToUml
                     throw new ItemApplyException(
                         $"Error when trying to find ItemTypes: {AllItemTypes.getErrorString()}");
                 case 0:
-                    Console.WriteLine($"No ItemTypes found with prefix {_prefix}. Please check prefix and run again.");
+                    Console.WriteLine($"No ItemTypes found. Please check prefix and/or package name and run again.");
                     Environment.Exit(0);
                     break;
                 default:
