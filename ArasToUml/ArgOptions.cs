@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using CommandLine;
+
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
@@ -23,8 +25,8 @@ namespace ArasToUml
         [Option('p', "password", Required = true, HelpText = "Login password")]
         public string Password { get; set; }
 
-        [Option('f', "prefix", Required = false, HelpText = "Prefix of ItemType names")]
-        public string Prefix { get; set; }
+        [Option('f', "prefix", Required = false, Separator = ',', HelpText = "Prefixes of ItemType names, separated by commas")]
+        public IEnumerable<string> Prefixes { get; set; }
 
         [Option('g', "package", Required = false, HelpText = "PackageDefinition ItemTypes are grouped in")]
         public string PackageDefinition { get; set; }
@@ -37,5 +39,9 @@ namespace ArasToUml
         [Option('e', "exclude", Required = false,
             HelpText = "Determines whether Aras default ItemType properties are excluded")]
         public bool ExcludeDefaultProps { get; set; }
+
+        [Option('w', "wide", Required = false,
+            HelpText = "If given, ItemTypes in the given package OR with the given prefix are considered.")]
+        public bool UseWiderSearch { get; set; }
     }
 }

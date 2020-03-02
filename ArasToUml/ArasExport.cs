@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Aras.IOM;
 
@@ -10,8 +11,9 @@ namespace ArasToUml
         private static Innovator _myInnovator;
         private readonly bool _doConsiderPackage;
         private readonly string _packageName;
-        private readonly string _prefix;
+        private readonly List<string> _prefixList;
         private readonly bool _prefixWasGiven;
+        private readonly bool _useWiderSearch;
 
         internal ArasExport(ArgOptions options)
         {
@@ -20,16 +22,22 @@ namespace ArasToUml
             Console.WriteLine("Server connection established.");
 
             _myInnovator = login.Innovator;
-            _prefix = options.Prefix;
-            _prefixWasGiven = !string.IsNullOrWhiteSpace(_prefix);
+            _prefixList = options.Prefixes?.ToList();
+            _prefixWasGiven = _prefixList?.Any() ?? false;
             _packageName = options.PackageDefinition;
             _doConsiderPackage = !string.IsNullOrWhiteSpace(_packageName);
+            _useWiderSearch = options.UseWiderSearch;
 
-            string message = "Fetching all ItemTypes";
-            if (_prefixWasGiven) message += $" with prefix {_prefix}";
-            Console.Write(message);
+            Console.Write("Fetching all ItemTypes");
+            // ReSharper disable once AssignNullToNotNullAttribute
+            // ReSharper does not realise that a null _prefixList is not possible here due to _prefixWasGiven
+            if (_prefixWasGiven) Console.Write($" with prefixes '{string.Join(", ", _prefixList)}'");
             if (_doConsiderPackage)
-                Console.Write($" inside PackageDefinition {_packageName}");
+            {
+                if (_useWiderSearch && _prefixWasGiven) Console.Write(" or");
+                Console.Write($" inside PackageDefinition '{_packageName}'");
+            }
+
             Console.WriteLine("...");
             AllItemTypes = FetchAllItemTypes(options.ExcludeDefaultProps);
 
@@ -62,15 +70,22 @@ namespace ArasToUml
             allItemTypes.setAttribute("serverEvents", "0");
             allItemTypes.setAttribute("select", "is_relationship, name");
 
+            var logicalItem = _useWiderSearch ? allItemTypes.newOR() : allItemTypes.newAND();
+
             if (_prefixWasGiven)
             {
-                allItemTypes.setProperty("name", $"{_prefix}*");
-                allItemTypes.setPropertyCondition("name", "like");
+                var topLevelOrItem = logicalItem.newOR();
+                foreach (string prefix in _prefixList)
+                {
+                    var orItem = topLevelOrItem.newOR();
+                    orItem.setProperty("name", $"{prefix.TrimStart()}*");
+                    orItem.setPropertyCondition("name", "like");
+                }
             }
 
             if (_doConsiderPackage)
             {
-                var andItem = allItemTypes.newAND();
+                var andItem = logicalItem.newAND();
                 andItem.setProperty("name", CreatePackageItemTypeCollection());
                 andItem.setPropertyCondition("name", "in");
             }
