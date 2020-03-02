@@ -1,65 +1,41 @@
-using System;
-using net.sf.dotnetcli;
+using CommandLine;
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace ArasToUml
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     internal class ArgOptions
     {
-        private readonly CommandLine _cmd;
-        private readonly Options _options;
+        [Value(0, Required = false,
+            HelpText = "File path to which the .dot file will be saved. Defaults to C:\\temp\\temp.dot")]
+        public string FilePath { get; set; } = "C:\\temp\\temp.dot";
 
-        /// <summary>
-        ///     The constructor for the class which defines the <see cref="Options" /> for the program and stores the
-        ///     <see cref="CommandLine" /> <paramref name="args" /> the application was started with.
-        /// </summary>
-        /// <remarks>
-        ///     The only constructor for the class. The <see cref="Options" /> defined here are stored on the
-        ///     instance in a field. The <see cref="CommandLine" /> <paramref name="args" /> are parsed
-        ///     (i.e. compared to the available options) and stored in another field.
-        /// </remarks>
-        /// <param name="args">The command line arguments that the program was started with.</param>
-        public ArgOptions(string[] args)
-        {
-            _options = new Options();
-            _options.AddOption("u", "url", true, "URL to Aras instance");
-            _options.AddOption("d", "db", true, "Name of database");
-            _options.AddOption("l", "login", true, "Login username");
-            _options.AddOption("p", "pw", true, "Login password");
-            _options.AddOption("f", "prefix", true, "Prefix of ItemType names");
-            _options.AddOption("g", "package", true, "PackageDefinition ItemTypes are grouped in");
-            _options.AddOption("r", "relitems", false,
-                "Determines whether ItemTypes with is_relationship equal to '1' shall be exported as classes as well");
-            _options.AddOption("i", "filepath", true,
-                @"File path to which the .dot file will be saved. Defaults to C:\temp\temp.dot");
-            _options.AddOption("e", null, false, "Determines whether Aras default ItemType properties are excluded");
+        [Option('u', "url", Required = true, HelpText = "URL to Aras instance")]
+        public string Url { get; set; }
 
-            _options.AddOption("h", "help", false,
-                "If this option is found, the program will ignore all other options and print usage/help information.");
+        [Option('d', "database", Required = true, HelpText = "Name of database")]
+        public string Database { get; set; }
 
-            ICommandLineParser parser = new BasicParser();
-            var cmd = parser.Parse(_options, args);
-            _cmd = cmd;
-        }
+        [Option('l', "login", Required = true, HelpText = "Login username")]
+        public string Login { get; set; }
 
-        /// <summary>
-        ///     A simple Getter for the <see cref="CommandLine" /> object on the instance.
-        /// </summary>
-        /// <returns>The <see cref="CommandLine" /> object stored in the corresponding field.</returns>
-        public CommandLine GetCmd()
-        {
-            return _cmd;
-        }
+        [Option('p', "password", Required = true, HelpText = "Login password")]
+        public string Password { get; set; }
 
-        /// <summary>
-        ///     Method that prints out help/usage information and exits the program if the corresponding command line
-        ///     argument was given.
-        /// </summary>
-        public void DealWithHelpOption()
-        {
-            if (!_cmd.HasOption("h")) return;
-            var formatter = new HelpFormatter();
-            formatter.PrintHelp("cmd", _options);
-            Environment.Exit(0);
-        }
+        [Option('f', "prefix", Required = false, HelpText = "Prefix of ItemType names")]
+        public string Prefix { get; set; }
+
+        [Option('g', "package", Required = false, HelpText = "PackageDefinition ItemTypes are grouped in")]
+        public string PackageDefinition { get; set; }
+
+        [Option('r', "relitems", Required = false,
+            HelpText =
+                "Determines whether ItemTypes with is_relationship equal to '1' shall be exported as classes as well")]
+        public bool RelsAsClasses { get; set; }
+
+        [Option('e', "exclude", Required = false,
+            HelpText = "Determines whether Aras default ItemType properties are excluded")]
+        public bool ExcludeDefaultProps { get; set; }
     }
 }

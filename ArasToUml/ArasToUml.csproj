@@ -32,8 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="dotnetcli-0.1.1, Version=0.1.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\References\dotnetcli\dotnetcli-0.1.1.dll</HintPath>
+    <Reference Include="CommandLine, Version=2.7.82.0, Culture=neutral, PublicKeyToken=5a870481e358d379">
+      <HintPath>..\packages\CommandLineParser.2.7.82\lib\net461\CommandLine.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="IOM, Version=12.0.0.13341, Culture=neutral, PublicKeyToken=524d880b05474146">
       <HintPath>..\References\IOM\IOM.dll</HintPath>
@@ -59,6 +60,9 @@
     <Compile Include="ItemApplyException.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

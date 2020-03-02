@@ -1,32 +1,35 @@
-﻿using net.sf.dotnetcli;
+﻿using System;
+using System.Collections.Generic;
+using CommandLine;
 
 namespace ArasToUml
 {
-    public class Program
+    public static class Program
     {
-        private readonly CommandLine _cmd;
-
-        private Program(string[] args)
-        {
-            var argOptions = new ArgOptions(args);
-            argOptions.DealWithHelpOption();
-            _cmd = argOptions.GetCmd();
-        }
-
         public static void Main(string[] args)
         {
-            var program = new Program(args);
-            var arasExport = program.PerformArasExport();
-            var graphCreator = new GraphCreator(arasExport);
-            bool relsAsClasses = program._cmd.HasOption("r");
-            graphCreator.CreateGraph(relsAsClasses);
-            string filePath = program._cmd.HasOption("i") ? program._cmd.GetOptionValue("i") : @"C:\temp\temp.dot";
-            graphCreator.ExportGraph(filePath);
+            Parser.Default.ParseArguments<ArgOptions>(args)
+                .WithParsed(RunOptionsAndPerformLogic)
+                .WithNotParsed(HandleParseError);
         }
 
-        private ArasExport PerformArasExport()
+        private static void RunOptionsAndPerformLogic(ArgOptions options)
         {
-            var arasExport = new ArasExport(_cmd);
+            var arasExport = PerformArasExport(options);
+            var graphCreator = new GraphCreator(arasExport);
+            graphCreator.CreateGraph(options.RelsAsClasses);
+            graphCreator.ExportGraph(options.FilePath ?? @"C:\temp\temp.dot");
+        }
+
+        private static void HandleParseError(IEnumerable<Error> errors)
+        {
+            Console.WriteLine("Error occured when parsing the command line arguments:");
+            foreach (var error in errors) Console.WriteLine(error);
+        }
+
+        private static ArasExport PerformArasExport(ArgOptions options)
+        {
+            var arasExport = new ArasExport(options);
             arasExport.SplitAllItemTypes();
             return arasExport;
         }

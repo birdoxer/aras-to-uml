@@ -2,38 +2,36 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Aras.IOM;
-using net.sf.dotnetcli;
 
 namespace ArasToUml
 {
     internal class ArasExport
     {
         private static Innovator _myInnovator;
+        private readonly bool _doConsiderPackage;
         private readonly string _packageName;
         private readonly string _prefix;
-        private readonly bool _doConsiderPackage;
+        private readonly bool _prefixWasGiven;
 
-        internal ArasExport(CommandLine cmd)
+        internal ArasExport(ArgOptions options)
         {
             Console.WriteLine("Establishing server connection...");
-            var login = new ArasLogin(
-                cmd.GetOptionValue("u"),
-                cmd.GetOptionValue("d"),
-                cmd.GetOptionValue("l"),
-                cmd.GetOptionValue("p"));
+            var login = new ArasLogin(options.Url, options.Database, options.Login, options.Password);
             Console.WriteLine("Server connection established.");
 
             _myInnovator = login.Innovator;
-            _prefix = cmd.GetOptionValue("f");
-            _packageName = cmd.GetOptionValue("g");
+            _prefix = options.Prefix;
+            _prefixWasGiven = !string.IsNullOrWhiteSpace(_prefix);
+            _packageName = options.PackageDefinition;
             _doConsiderPackage = !string.IsNullOrWhiteSpace(_packageName);
-            bool excludeDefProps = cmd.HasOption("e");
 
-            Console.Write($"Fetching all ItemTypes with prefix {_prefix}");
+            string message = "Fetching all ItemTypes";
+            if (_prefixWasGiven) message += $" with prefix {_prefix}";
+            Console.Write(message);
             if (_doConsiderPackage)
                 Console.Write($" inside PackageDefinition {_packageName}");
             Console.WriteLine("...");
-            AllItemTypes = FetchAllItemTypes(excludeDefProps);
+            AllItemTypes = FetchAllItemTypes(options.ExcludeDefaultProps);
 
             login.LogOut();
 
@@ -44,7 +42,7 @@ namespace ArasToUml
                     throw new ItemApplyException(
                         $"Error when trying to find ItemTypes: {AllItemTypes.getErrorString()}");
                 case 0:
-                    Console.WriteLine($"No ItemTypes found. Please check prefix and/or package name and run again.");
+                    Console.WriteLine("No ItemTypes found. Please check prefix and/or package name and run again.");
                     Environment.Exit(0);
                     break;
                 default:
@@ -63,8 +61,13 @@ namespace ArasToUml
             var allItemTypes = _myInnovator.newItem("ItemType", "get");
             allItemTypes.setAttribute("serverEvents", "0");
             allItemTypes.setAttribute("select", "is_relationship, name");
-            allItemTypes.setProperty("name", $"{_prefix}*");
-            allItemTypes.setPropertyCondition("name", "like");
+
+            if (_prefixWasGiven)
+            {
+                allItemTypes.setProperty("name", $"{_prefix}*");
+                allItemTypes.setPropertyCondition("name", "like");
+            }
+
             if (_doConsiderPackage)
             {
                 var andItem = allItemTypes.newAND();
@@ -104,15 +107,12 @@ namespace ArasToUml
 
             packageGroup = packageDefinition.getRelationships("PackageGroup");
             int groupCount = packageGroup.getItemCount();
-            if (groupCount < 1) 
+            if (groupCount < 1)
                 throw new ArgumentException($"No ItemTypes found in PackageDefinition with name {_packageName}");
 
             var idSet = new HashSet<string>();
-            for (int i = 0; i < groupCount; i++)
-            {
-                idSet.Add(packageGroup.getItemByIndex(i).getID());
-            }
-            
+            for (int i = 0; i < groupCount; i++) idSet.Add(packageGroup.getItemByIndex(i).getID());
+
             var packageElements = _myInnovator.newItem("PackageElement", "get");
             packageElements.setAttribute("select", "name");
             packageElements.setProperty("source_id", $"'{string.Join("','", idSet)}'");
