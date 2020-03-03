@@ -25,7 +25,7 @@ namespace ArasToUml
         {
             _fileContentBuilder.Append(_dotGraph.IsDiGraph ? "digraph " : "graph");
             _fileContentBuilder.AppendLine($"{_dotGraph.Name} {{");
-            AppendAttributes(_dotGraph);
+            AppendAttributes(_dotGraph, true);
         }
 
         private void AppendDotElements()
@@ -34,33 +34,40 @@ namespace ArasToUml
                 switch (graphElement)
                 {
                     case DotArrow dotArrow:
-                        _fileContentBuilder.AppendLine($"{dotArrow.Source.Name} -> {dotArrow.Target.Name}");
-                        if (string.IsNullOrEmpty(dotArrow.CustomStyle)) break;
-                        _fileContentBuilder.AppendLine($"[{dotArrow.CustomStyle}]");
+                        _fileContentBuilder.Append($"\t{dotArrow.Source.Name} -> {dotArrow.Target.Name}");
+                        if (string.IsNullOrEmpty(dotArrow.CustomStyle))
+                        {
+                            _fileContentBuilder.AppendLine();
+                            break;
+                        }
+                        _fileContentBuilder.AppendLine(" [");
+                        _fileContentBuilder.AppendLine($"\t\t{dotArrow.CustomStyle}");
+                        _fileContentBuilder.AppendLine("\t]");
                         break;
                     case DotClass dotClass:
-                        _fileContentBuilder.AppendLine($"{dotClass.Name} [");
-                        _fileContentBuilder.AppendLine($"label = \"{{{dotClass.Label}}}\"");
+                        _fileContentBuilder.AppendLine($"\t{dotClass.Name} [");
+                        _fileContentBuilder.AppendLine($"\t\tlabel = \"{{{dotClass.Label}}}\"");
                         AppendAttributes(dotClass);
-                        _fileContentBuilder.AppendLine("]");
+                        _fileContentBuilder.AppendLine("\t]");
                         break;
                     case DotEdge dotEdge:
-                        _fileContentBuilder.AppendLine("edge [");
+                        _fileContentBuilder.AppendLine("\tedge [");
                         AppendAttributes(dotEdge);
-                        _fileContentBuilder.AppendLine("]");
+                        _fileContentBuilder.AppendLine("\t]");
                         break;
                     case DotNode dotNode:
-                        _fileContentBuilder.AppendLine("node [");
+                        _fileContentBuilder.AppendLine("\tnode [");
                         AppendAttributes(dotNode);
-                        _fileContentBuilder.AppendLine("]");
+                        _fileContentBuilder.AppendLine("\t]");
                         break;
                 }
         }
 
-        private void AppendAttributes(DotElementWithAttributes dotElement)
+        private void AppendAttributes(DotElementWithAttributes dotElement, bool useSingleIndent = false)
         {
+            string indent = useSingleIndent ? "\t" : "\t\t";
             foreach (var kvp in dotElement.GetAttributes())
-                _fileContentBuilder.AppendLine($"{kvp.Key} = \"{kvp.Value}\"");
+                _fileContentBuilder.AppendLine($"{indent}{kvp.Key} = \"{kvp.Value}\"");
         }
     }
 }
