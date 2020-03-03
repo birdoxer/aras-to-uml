@@ -18,7 +18,8 @@ namespace ArasToUml
         {
             var classList = GraphElements.FindAll(el => el.GetType() == typeof(DotClass)).Cast<DotClass>()
                 .ToList();
-            var returnClass = classList.Find(dotClass => dotClass.Name == className);
+            var returnClass =
+                classList.Find(dotClass => dotClass.Name == className || dotClass.Name == $"\"{className}\"");
 
             if (returnClass != null || !createNewIfNotFound) return returnClass;
 
