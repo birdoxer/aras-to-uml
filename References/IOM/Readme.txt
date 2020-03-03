@@ -1,0 +1,1 @@
+In order for the solution to compile, you will need to copy the IOM.dll from the Aras CD image into this folder.
