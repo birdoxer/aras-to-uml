@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Aras.IOM;
 
-namespace ArasToUml
+namespace ArasToUml.ArasUtils
 {
     internal class ArasExport
     {

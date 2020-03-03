@@ -1,8 +1,10 @@
 using System;
 using System.Text;
 using Aras.IOM;
+using ArasToUml.ArasUtils;
+using ArasToUml.Dot;
 
-namespace ArasToUml
+namespace ArasToUml.Graph
 {
     internal class GraphCreator
     {

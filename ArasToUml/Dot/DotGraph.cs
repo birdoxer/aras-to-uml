@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ArasToUml
+namespace ArasToUml.Dot
 {
     public class DotGraph : DotElementWithAttributes
     {

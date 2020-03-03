@@ -25,7 +25,8 @@ namespace ArasToUml
         [Option('p', "password", Required = true, HelpText = "Login password")]
         public string Password { get; set; }
 
-        [Option('f', "prefix", Required = false, Separator = ',', HelpText = "Prefixes of ItemType names, separated by commas")]
+        [Option('f', "prefix", Required = false, Separator = ',',
+            HelpText = "Prefixes of ItemType names, separated by commas")]
         public IEnumerable<string> Prefixes { get; set; }
 
         [Option('g', "package", Required = false, HelpText = "PackageDefinition ItemTypes are grouped in")]

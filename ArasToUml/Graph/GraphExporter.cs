@@ -1,7 +1,8 @@
 using System.IO;
 using System.Text;
+using ArasToUml.Dot;
 
-namespace ArasToUml
+namespace ArasToUml.Graph
 {
     public class GraphExporter
     {
@@ -40,6 +41,7 @@ namespace ArasToUml
                             _fileContentBuilder.AppendLine();
                             break;
                         }
+
                         _fileContentBuilder.AppendLine(" [");
                         _fileContentBuilder.AppendLine($"\t\t{dotArrow.CustomStyle}");
                         _fileContentBuilder.AppendLine("\t]");

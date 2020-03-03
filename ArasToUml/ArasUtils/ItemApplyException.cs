@@ -1,6 +1,6 @@
 using System;
 
-namespace ArasToUml
+namespace ArasToUml.ArasUtils
 {
     public class ItemApplyException : ApplicationException
     {

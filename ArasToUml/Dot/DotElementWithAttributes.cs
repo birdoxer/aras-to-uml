@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 // ReSharper disable UnusedMember.Global
 
-namespace ArasToUml
+namespace ArasToUml.Dot
 {
     public abstract class DotElementWithAttributes : DotElement
     {

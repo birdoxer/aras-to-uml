@@ -45,19 +45,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArasExport.cs" />
-    <Compile Include="ArasLogin.cs" />
+    <Compile Include="ArasUtils\ArasExport.cs" />
+    <Compile Include="ArasUtils\ArasLogin.cs" />
+    <Compile Include="ArasUtils\ItemApplyException.cs" />
     <Compile Include="ArgOptions.cs" />
-    <Compile Include="DotArrow.cs" />
-    <Compile Include="DotClass.cs" />
-    <Compile Include="DotEdge.cs" />
-    <Compile Include="DotElement.cs" />
-    <Compile Include="DotElementWithAttributes.cs" />
-    <Compile Include="DotGraph.cs" />
-    <Compile Include="DotNode.cs" />
-    <Compile Include="GraphCreator.cs" />
-    <Compile Include="GraphExporter.cs" />
-    <Compile Include="ItemApplyException.cs" />
+    <Compile Include="Dot\DotArrow.cs" />
+    <Compile Include="Dot\DotClass.cs" />
+    <Compile Include="Dot\DotEdge.cs" />
+    <Compile Include="Dot\DotElement.cs" />
+    <Compile Include="Dot\DotElementWithAttributes.cs" />
+    <Compile Include="Dot\DotGraph.cs" />
+    <Compile Include="Dot\DotNode.cs" />
+    <Compile Include="Graph\GraphCreator.cs" />
+    <Compile Include="Graph\GraphExporter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

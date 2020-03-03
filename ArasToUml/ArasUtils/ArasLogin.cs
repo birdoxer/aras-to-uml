@@ -1,7 +1,7 @@
 using System;
 using Aras.IOM;
 
-namespace ArasToUml
+namespace ArasToUml.ArasUtils
 {
     internal class ArasLogin
     {

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using ArasToUml.ArasUtils;
+using ArasToUml.Graph;
 using CommandLine;
 
 namespace ArasToUml
