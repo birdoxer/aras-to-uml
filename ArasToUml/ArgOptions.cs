@@ -7,6 +7,9 @@ using CommandLine;
 namespace ArasToUml
 {
     // ReSharper disable once ClassNeverInstantiated.Global
+    /// <summary>
+    ///     Class that defines all command line arguments and their behaviour.
+    /// </summary>
     internal class ArgOptions
     {
         [Value(0, Required = false,

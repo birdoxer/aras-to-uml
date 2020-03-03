@@ -6,28 +6,57 @@ using Aras.IOM;
 
 namespace ArasToUml.ArasUtils
 {
+    /// <summary>
+    ///     Class that performs the data model export from Aras.
+    /// </summary>
     internal class ArasExport
     {
         private static Innovator _myInnovator;
+        private readonly ArasLogin _arasLogin;
         private readonly bool _doConsiderPackage;
+        private readonly bool _excludeDefaultProps;
         private readonly string _packageName;
         private readonly List<string> _prefixList;
         private readonly bool _prefixWasGiven;
         private readonly bool _useWiderSearch;
 
+        /// <summary>
+        ///     Only constructor for the class.
+        /// </summary>
+        /// <remarks>
+        ///     Logs into Innovator and sets the class fields/properties relating to Aras and the command line options.
+        /// </remarks>
+        /// <param name="options">The <see cref="ArgOptions" /> the program was started with.</param>
         internal ArasExport(ArgOptions options)
         {
             Console.WriteLine("Establishing server connection...");
             var login = new ArasLogin(options.Url, options.Database, options.Login, options.Password);
             Console.WriteLine("Server connection established.");
 
+            _arasLogin = login;
             _myInnovator = login.Innovator;
             _prefixList = options.Prefixes?.ToList();
             _prefixWasGiven = _prefixList?.Any() ?? false;
             _packageName = options.PackageDefinition;
             _doConsiderPackage = !string.IsNullOrWhiteSpace(_packageName);
             _useWiderSearch = options.UseWiderSearch;
+            _excludeDefaultProps = options.ExcludeDefaultProps;
+        }
 
+        private Item AllItemTypes { get; set; }
+        internal Item ItemTypes { get; private set; }
+        internal Item RelationshipTypes { get; private set; }
+        internal Item PolyItemTypes { get; private set; }
+
+        /// <summary>
+        ///     Gets the desired data model from Aras and writes corresponding info to the console.
+        /// </summary>
+        /// <remarks>
+        ///     Logs out of Aras Innovator after the getting the data model, even if an error occurred during that fetch.
+        /// </remarks>
+        /// <exception cref="ItemApplyException">Thrown if an error occured using apply() on an Aras Item object.</exception>
+        internal void RunExport()
+        {
             Console.Write("Fetching all ItemTypes");
             // ReSharper disable once AssignNullToNotNullAttribute
             // ReSharper does not realise that a null _prefixList is not possible here due to _prefixWasGiven
@@ -39,9 +68,15 @@ namespace ArasToUml.ArasUtils
             }
 
             Console.WriteLine("...");
-            AllItemTypes = FetchAllItemTypes(options.ExcludeDefaultProps);
 
-            login.LogOut();
+            try
+            {
+                AllItemTypes = FetchAllItemTypes(_excludeDefaultProps);
+            }
+            finally
+            {
+                _arasLogin.LogOut();
+            }
 
             int allItemCount = AllItemTypes.getItemCount();
             switch (allItemCount)
@@ -50,7 +85,7 @@ namespace ArasToUml.ArasUtils
                     throw new ItemApplyException(
                         $"Error when trying to find ItemTypes: {AllItemTypes.getErrorString()}");
                 case 0:
-                    Console.WriteLine("No ItemTypes found. Please check prefix and/or package name and run again.");
+                    Console.WriteLine("No ItemTypes found. Please check prefix(es) and/or package name and run again.");
                     Environment.Exit(0);
                     break;
                 default:
@@ -59,11 +94,17 @@ namespace ArasToUml.ArasUtils
             }
         }
 
-        private Item AllItemTypes { get; }
-        internal Item ItemTypes { get; private set; }
-        internal Item RelationshipTypes { get; private set; }
-        internal Item PolyItemTypes { get; private set; }
-
+        /// <summary>
+        ///     Queries the Innovator instance for the data model defined by the command line options.
+        /// </summary>
+        /// <remarks>
+        ///     This is the method that actually builds up the query items and sends request to the Aras instance.
+        /// </remarks>
+        /// <param name="excludeDefProps">
+        ///     Determines whether the resulting .dot classes shall contain Aras default properties or not.
+        ///     See <see cref="CreateDefPropsExclusionClause" />.
+        /// </param>
+        /// <returns>An Item object containing all ItemTypes in the data model.</returns>
         private Item FetchAllItemTypes(bool excludeDefProps)
         {
             var allItemTypes = _myInnovator.newItem("ItemType", "get");
@@ -105,6 +146,16 @@ namespace ArasToUml.ArasUtils
             return allItemTypes.apply();
         }
 
+        /// <summary>
+        ///     Finds the names for all ItemTypes and RelationshipTypes in the given <see cref="_packageName" />.
+        /// </summary>
+        /// <returns>
+        ///     A string containing all ItemType and RelationshipType names out of the given package, formatted to work
+        ///     with property condition "in".
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        ///     Thrown if the given package definition does not exist or contains no ItemTypes.
+        /// </exception>
         private string CreatePackageItemTypeCollection()
         {
             var nameSet = new HashSet<string>();
@@ -148,6 +199,13 @@ namespace ArasToUml.ArasUtils
             return $"'{string.Join("','", nameSet)}'";
         }
 
+        /// <summary>
+        ///     Creates a clause to exclude Aras default ItemType properties from the exported data model.
+        /// </summary>
+        /// <returns>
+        ///     A string containing all property names that shall be excluded, formatted to work with property
+        ///     condition "not in".
+        /// </returns>
         private static string CreateDefPropsExclusionClause()
         {
             var propsToExclude = new List<string>
@@ -167,6 +225,10 @@ namespace ArasToUml.ArasUtils
             return clauseBuilder.ToString().Substring(1);
         }
 
+        /// <summary>
+        ///     Splits all ItemTypes found by <see cref="FetchAllItemTypes" /> into ItemTypes, RelationshipTypes and
+        ///     PolyItem-types.
+        /// </summary>
         internal void SplitAllItemTypes()
         {
             ItemTypes = AllItemTypes.getItemsByXPath(
