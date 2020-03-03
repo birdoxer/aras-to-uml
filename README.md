@@ -18,7 +18,7 @@
 
 ## Usage
 
-1. Run the ArasToUml.exe with command line argument -h or --help to print out usage information
+1. Run the ArasToUml.exe with command line argument --help to print out usage information
 2. Once the program has finished and the .dot-file is created, use your Graphviz installation or equivalent online Graphviz tools to generate the pseudo-UML class diagram
 
 ## Contributing
