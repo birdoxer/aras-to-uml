@@ -71,7 +71,7 @@ namespace ArasToUml.ArasUtils
 
             try
             {
-                AllItemTypes = FetchAllItemTypes(_excludeDefaultProps);
+                AllItemTypes = FetchAllItemTypes();
             }
             finally
             {
@@ -100,12 +100,8 @@ namespace ArasToUml.ArasUtils
         /// <remarks>
         ///     This is the method that actually builds up the query items and sends request to the Aras instance.
         /// </remarks>
-        /// <param name="excludeDefProps">
-        ///     Determines whether the resulting .dot classes shall contain Aras default properties or not.
-        ///     See <see cref="CreateDefPropsExclusionClause" />.
-        /// </param>
         /// <returns>An Item object containing all ItemTypes in the data model.</returns>
-        private Item FetchAllItemTypes(bool excludeDefProps)
+        private Item FetchAllItemTypes()
         {
             var allItemTypes = _myInnovator.newItem("ItemType", "get");
             allItemTypes.setAttribute("serverEvents", "0");
@@ -136,7 +132,7 @@ namespace ArasToUml.ArasUtils
             allItemTypes.addRelationship(morphaeRel);
             var propertyRel = _myInnovator.newItem("Property", "get");
             propertyRel.setAttribute("select", "name, data_type, data_source");
-            if (excludeDefProps)
+            if (_excludeDefaultProps)
             {
                 propertyRel.setPropertyCondition("name", "not in");
                 propertyRel.setProperty("name", CreateDefPropsExclusionClause());

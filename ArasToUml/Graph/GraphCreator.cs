@@ -181,7 +181,7 @@ namespace ArasToUml.Graph
                 string dataSource = currentProp.getPropertyAttribute("data_source", "name", "");
                 if (dataSource == "") continue;
                 var relationshipArrow =
-                    new DotArrow(itemType.getProperty("name", "UnknownItemType"), dataSource, Graph)
+                    new DotArrow(itemType.getProperty("name", $"\"{itemType.getID()}\""), dataSource, Graph)
                         {CustomStyle = $"label = \"{currentProp.getProperty("name", "")}\""};
                 Graph.GraphElements.Add(relationshipArrow);
             }
